@@ -18,17 +18,22 @@ import {
 import { db } from '@/db'
 import { formatPrice } from '@/lib/utils'
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import StatusDropdown from './StatusDropdown'
 
 const Page = async () => {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
 
+  if (!user) {
+    return notFound()
+  }
+
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 
-  if (!user || user.email !== ADMIN_EMAIL) {
-    return notFound()
+  // If user is not admin, redirect to home page
+  if (user.email !== ADMIN_EMAIL) {
+    redirect('/')
   }
 
   const orders = await db.order.findMany({
